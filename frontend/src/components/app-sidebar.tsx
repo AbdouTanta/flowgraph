@@ -2,7 +2,6 @@ import * as React from "react";
 import {
   IconFolder,
   IconInnerShadowTop,
-  IconListDetails,
   IconSettings,
 } from "@tabler/icons-react";
 
@@ -28,19 +27,14 @@ const data = {
   navMain: [
     {
       title: "Flows",
-      url: "#",
+      url: "/",
       icon: IconFolder,
-    },
-    {
-      title: "New flow",
-      url: "/graph",
-      icon: IconListDetails,
     },
   ],
   navBottom: [
     {
       title: "Settings",
-      url: "#",
+      url: "/settings",
       icon: IconSettings,
     },
   ],
