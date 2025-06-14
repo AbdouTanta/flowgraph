@@ -38,6 +38,7 @@ func GetFlowByID(c *gin.Context) {
 func CreateFlow(c *gin.Context) {
 	var flow db.Flow
 	if err := c.ShouldBindJSON(&flow); err != nil {
+		log.Printf("Error binding flow data: %v", err)
 		c.JSON(400, gin.H{"error": "Invalid flow data"})
 		return
 	}

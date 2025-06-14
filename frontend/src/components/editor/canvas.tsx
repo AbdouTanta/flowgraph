@@ -15,9 +15,11 @@ import {
 
 import "@xyflow/react/dist/style.css";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import type { Flow } from "@/types/flows";
+import type { Flow, ICreateFlow } from "@/types/flows";
 import Toolbar from "./toolbar";
 import { toast } from "sonner";
+import NodeMenu from "./node-menu";
+import { useSidebar } from "../ui/sidebar";
 
 const initialNodes: Node[] = [
   {
@@ -42,7 +44,8 @@ const initialEdges: Edge[] = [
 
 // If id is provided, it will load the flow with that id
 // If not, it will create a new empty flow
-export default function FlowEditor({ id }: { id?: string }) {
+export default function Canvas({ id }: { id?: string }) {
+  const { setOpen } = useSidebar();
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>(initialEdges);
 
@@ -65,7 +68,6 @@ export default function FlowEditor({ id }: { id?: string }) {
   useEffect(() => {
     if (flow.data) {
       const { nodes: flowNodes, edges: flowEdges } = flow.data.flow;
-      console.log(nodes, edges);
       if (flowNodes && flowEdges) {
         setNodes(flowNodes);
         setEdges(flowEdges);
@@ -73,13 +75,18 @@ export default function FlowEditor({ id }: { id?: string }) {
     }
   }, [flow.data, setNodes, setEdges]);
 
+  // Close sidebar when flow editor is opened
+  useEffect(() => {
+    setOpen(false);
+  }, []);
+
   const onConnect = useCallback(
     (params: Connection) => setEdges((eds) => addEdge(params, eds)),
     [setEdges],
   );
 
   const saveFlow = useMutation({
-    mutationFn: async (graphData: Flow) => {
+    mutationFn: async (graphData: ICreateFlow) => {
       const response = await fetch("/api/flows", {
         method: "POST",
         headers: {
@@ -115,12 +122,10 @@ export default function FlowEditor({ id }: { id?: string }) {
         <Toolbar
           onSaveGraph={() => {
             const graphData = { nodes, edges };
-            console.log("Graph Data:", graphData);
             // Here you can implement saving logic, e.g., sending to a server
             saveFlow.mutate(
               {
                 // TODO - replace with actual graph data
-                id: "lol",
                 name: "lol",
                 description: "even more lolz",
                 ...graphData,
@@ -145,6 +150,7 @@ export default function FlowEditor({ id }: { id?: string }) {
             setNodes((nds) => nds.concat(newNode));
           }}
         />
+        <NodeMenu />
         <Controls />
         <MiniMap />
         <Background variant={BackgroundVariant.Dots} gap={12} size={1} />

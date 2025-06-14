@@ -7,3 +7,5 @@ export type Flow = {
   nodes: Node[];
   edges: Edge[];
 };
+
+export type ICreateFlow = Omit<Flow, "id">;

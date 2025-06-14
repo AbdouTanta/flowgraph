@@ -9,25 +9,32 @@ import Index from "./routes";
 import NewFlow from "./routes/new-flow";
 import { Toaster } from "./components/ui/sonner";
 
+function Wrapper({ children }: { children: React.ReactNode }) {
+  // To be used for layout, hooks etc.
+  return children;
+}
+
 function App() {
   const queryClient = new QueryClient();
 
   return (
     <QueryClientProvider client={queryClient}>
       <SidebarProvider>
-        <AppSidebar variant="floating" />
-        <SidebarInset>
-          <SiteHeader />
-          <Switch>
-            <Route path="/" component={Index} />
-            <Route path="/flows" component={Flows} />
-            <Route path="/flows/new" component={NewFlow} />
-            <Route path="/flows/:id">
-              {({ id }) => <Flow id={id as string} />}
-            </Route>
-          </Switch>
-        </SidebarInset>
-        <Toaster />
+        <Wrapper>
+          <AppSidebar variant="floating" />
+          <SidebarInset>
+            <SiteHeader />
+            <Switch>
+              <Route path="/" component={Index} />
+              <Route path="/flows" component={Flows} />
+              <Route path="/flows/new" component={NewFlow} />
+              <Route path="/flows/:id">
+                {({ id }) => <Flow id={id as string} />}
+              </Route>
+            </Switch>
+          </SidebarInset>
+          <Toaster />
+        </Wrapper>
       </SidebarProvider>
     </QueryClientProvider>
   );
