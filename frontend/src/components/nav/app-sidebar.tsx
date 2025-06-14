@@ -5,9 +5,9 @@ import {
   IconSettings,
 } from "@tabler/icons-react";
 
-import { NavMain } from "@/components/nav-main";
-import { NavBottom } from "@/components/nav-bottom";
-import { NavUser } from "@/components/nav-user";
+import { NavMain } from "@/components/nav/nav-main";
+import { NavBottom } from "@/components/nav/nav-bottom";
+import { NavUser } from "@/components/nav/nav-user";
 import {
   Sidebar,
   SidebarContent,
@@ -17,6 +17,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
+import { Link } from "wouter";
 
 const data = {
   user: {
@@ -50,10 +51,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               asChild
               className="data-[slot=sidebar-menu-button]:!p-1.5"
             >
-              <a href="#">
+              <Link href="/">
                 <IconInnerShadowTop className="!size-5" />
                 <span className="text-base font-semibold">Flowgraph.</span>
-              </a>
+              </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>

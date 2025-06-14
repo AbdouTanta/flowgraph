@@ -1,0 +1,53 @@
+package server
+
+import (
+	"flowgraph/db"
+	"log"
+
+	"github.com/gin-gonic/gin"
+)
+
+func GetAllFlows(c *gin.Context) {
+	// Get all flows from database
+	flows, err := db.FindManyDocuments[db.Flow]("flows", nil)
+	if err != nil {
+		log.Printf("Error retrieving flows: %v", err)
+		c.JSON(500, gin.H{
+			"error": "Failed to retrieve flows",
+		})
+		return
+	}
+
+	// Return the flows as JSON
+	c.JSON(200, gin.H{"flows": flows})
+}
+
+func GetFlowByID(c *gin.Context) {
+	flowID := c.Param("id")
+
+	// Find the flow by ID in the database
+	flow, err := db.FindDocumentByID[db.Flow]("flows", flowID)
+	if err != nil {
+		c.JSON(404, gin.H{"error": "Flow not found"})
+		return
+	}
+
+	c.JSON(200, gin.H{"flow": flow})
+}
+
+func CreateFlow(c *gin.Context) {
+	var flow db.Flow
+	if err := c.ShouldBindJSON(&flow); err != nil {
+		c.JSON(400, gin.H{"error": "Invalid flow data"})
+		return
+	}
+
+	// Insert the new flow into the database
+	if _, err := db.CreateDocument("flows", flow); err != nil {
+		log.Printf("Error creating flow: %v", err)
+		c.JSON(500, gin.H{"error": "Failed to create flow"})
+		return
+	}
+
+	c.JSON(201, gin.H{"message": "Flow created successfully"})
+}

@@ -1,22 +1,35 @@
 import { Route, Switch } from "wouter";
-import Graph from "./components/Graph";
-import Home from "./routes/flows";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import Flows from "./routes/flows";
 import { SidebarInset, SidebarProvider } from "./components/ui/sidebar";
-import { SiteHeader } from "./components/site-header";
-import { AppSidebar } from "./components/app-sidebar";
+import { SiteHeader } from "./components/nav/site-header";
+import { AppSidebar } from "./components/nav/app-sidebar";
+import Flow from "./routes/flow";
+import Index from "./routes";
+import NewFlow from "./routes/new-flow";
+import { Toaster } from "./components/ui/sonner";
 
 function App() {
+  const queryClient = new QueryClient();
+
   return (
-    <SidebarProvider>
-      <AppSidebar variant="inset" />
-      <SidebarInset>
-        <SiteHeader />
-        <Switch>
-          <Route path="/" component={Home} />
-          <Route path="/graph" component={Graph} />
-        </Switch>
-      </SidebarInset>
-    </SidebarProvider>
+    <QueryClientProvider client={queryClient}>
+      <SidebarProvider>
+        <AppSidebar variant="floating" />
+        <SidebarInset>
+          <SiteHeader />
+          <Switch>
+            <Route path="/" component={Index} />
+            <Route path="/flows" component={Flows} />
+            <Route path="/flows/new" component={NewFlow} />
+            <Route path="/flows/:id">
+              {({ id }) => <Flow id={id as string} />}
+            </Route>
+          </Switch>
+        </SidebarInset>
+        <Toaster />
+      </SidebarProvider>
+    </QueryClientProvider>
   );
 }
 
