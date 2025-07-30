@@ -10,11 +10,8 @@ import (
 	"go.mongodb.org/mongo-driver/v2/mongo/options"
 )
 
-// Database object to be used in helpers
-var database *mongo.Database
-
 // init makes sure the MongoDB client is initialized when the package is imported.
-func init() {
+func InitMongoDbClient() *mongo.Database {
 	// Get the MongoDB URI from the environment variable
 	var uri string
 	if uri = os.Getenv("MONGODB_URI"); uri == "" {
@@ -29,7 +26,7 @@ func init() {
 	}
 
 	//Set the global Database variable to the "flowgraph" database
-	database = client.Database("flowgraph")
+	database := client.Database("flowgraph")
 	// Ping the database to verify the connection
 	if err = client.Ping(context.TODO(), nil); err != nil {
 		log.Fatalf("Failed to connect to MongoDB: %v", err)
@@ -37,4 +34,5 @@ func init() {
 
 	// If we reach here, the connection was successful
 	fmt.Println("Successfully connected to MongoDB!")
+	return database
 }

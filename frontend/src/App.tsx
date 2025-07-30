@@ -8,6 +8,7 @@ import Flow from "./routes/flow";
 import Index from "./routes";
 import NewFlow from "./routes/new-flow";
 import { Toaster } from "./components/ui/sonner";
+import { queryConfig } from "./lib/react-query";
 
 function Wrapper({ children }: { children: React.ReactNode }) {
   // To be used for layout, hooks etc.
@@ -15,7 +16,7 @@ function Wrapper({ children }: { children: React.ReactNode }) {
 }
 
 function App() {
-  const queryClient = new QueryClient();
+  const queryClient = new QueryClient({ defaultOptions: queryConfig });
 
   return (
     <QueryClientProvider client={queryClient}>

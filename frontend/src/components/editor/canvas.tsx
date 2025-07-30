@@ -20,6 +20,7 @@ import Toolbar from "./toolbar";
 import { toast } from "sonner";
 import NodeMenu from "./node-menu";
 import { useSidebar } from "../ui/sidebar";
+import useCanvas from "@/hooks/use-canvas";
 
 const initialNodes: Node[] = [
   {
@@ -46,6 +47,8 @@ const initialEdges: Edge[] = [
 // If not, it will create a new empty flow
 export default function Canvas({ id }: { id?: string }) {
   const { setOpen } = useSidebar();
+  const { selectedNodeId, updateSelectedNodeId, resetSelectedNodeId } =
+    useCanvas();
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>(initialEdges);
 
@@ -85,6 +88,20 @@ export default function Canvas({ id }: { id?: string }) {
     [setEdges],
   );
 
+  const onNodeClick = useCallback(
+    (event: React.MouseEvent, node: Node) => {
+      console.log("Node clicked:", event, node);
+      // Update the selected node ID in the canvas store
+      updateSelectedNodeId(node.id);
+    },
+    [updateSelectedNodeId],
+  );
+
+  const onPaneClick = useCallback(() => {
+    // Reset the selected node ID when clicking on the pane
+    resetSelectedNodeId();
+  }, [resetSelectedNodeId]);
+
   const saveFlow = useMutation({
     mutationFn: async (graphData: ICreateFlow) => {
       const response = await fetch("/api/flows", {
@@ -116,7 +133,9 @@ export default function Canvas({ id }: { id?: string }) {
         edges={edges}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
+        onNodeClick={onNodeClick}
         onConnect={onConnect}
+        onPaneClick={onPaneClick}
         fitView={true}
       >
         <Toolbar
@@ -150,7 +169,7 @@ export default function Canvas({ id }: { id?: string }) {
             setNodes((nds) => nds.concat(newNode));
           }}
         />
-        <NodeMenu />
+        <NodeMenu id={selectedNodeId} />
         <Controls />
         <MiniMap />
         <Background variant={BackgroundVariant.Dots} gap={12} size={1} />

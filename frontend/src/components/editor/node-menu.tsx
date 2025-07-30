@@ -18,7 +18,7 @@ const formSchema = z.object({
   label: z.string(),
 });
 
-export default function NodeMenu({ id }: { id: string }) {
+export default function NodeMenu({ id }: { id: string | null }) {
   // 1. Define your form.
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -33,6 +33,9 @@ export default function NodeMenu({ id }: { id: string }) {
     // ✅ This will be type-safe and validated.
     console.log(values);
   }
+
+  // If no id is provided, return null to avoid rendering the menu.
+  if (!id) return null;
 
   return (
     <div className="absolute w-80 right-4 top-1/2 -translate-y-1/2 bg-background border border-border rounded-lg shadow-lg p-6 z-50">

@@ -62,15 +62,15 @@ func (o *FindOptions) WithProjection(projection interface{}) *FindOptions {
 }
 
 // CreateDocument inserts a new document into the collection
-func CreateDocument[T any](collectionName string, document T) (*bson.ObjectID, error) {
-	if database == nil {
+func CreateDocument[T any](db *mongo.Database, collectionName string, document T) (*bson.ObjectID, error) {
+	if db == nil {
 		return nil, fmt.Errorf("database not initialized, call Initialize first")
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), DefaultTimeout)
 	defer cancel()
 
-	collection := database.Collection(collectionName)
+	collection := db.Collection(collectionName)
 	result, err := collection.InsertOne(ctx, document)
 	if err != nil {
 		return nil, fmt.Errorf("insert failed: %v", err)
@@ -81,8 +81,8 @@ func CreateDocument[T any](collectionName string, document T) (*bson.ObjectID, e
 }
 
 // CreateManyDocuments inserts multiple documents into the collection
-func CreateManyDocuments[T any](collectionName string, documents []T) ([]bson.ObjectID, error) {
-	if database == nil {
+func CreateManyDocuments[T any](db *mongo.Database, collectionName string, documents []T) ([]bson.ObjectID, error) {
+	if db == nil {
 		return nil, fmt.Errorf("database not initialized, call Initialize first")
 	}
 
@@ -99,7 +99,7 @@ func CreateManyDocuments[T any](collectionName string, documents []T) ([]bson.Ob
 		docs[i] = doc
 	}
 
-	collection := database.Collection(collectionName)
+	collection := db.Collection(collectionName)
 	result, err := collection.InsertMany(ctx, docs)
 	if err != nil {
 		return nil, fmt.Errorf("insert many failed: %v", err)
@@ -114,15 +114,15 @@ func CreateManyDocuments[T any](collectionName string, documents []T) ([]bson.Ob
 }
 
 // FindOneDocument finds a single document by filter
-func FindOneDocument[T any](collectionName string, filter interface{}) (*T, error) {
-	if database == nil {
+func FindOneDocument[T any](db *mongo.Database, collectionName string, filter interface{}) (*T, error) {
+	if db == nil {
 		return nil, fmt.Errorf("database not initialized, call Initialize first")
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), DefaultTimeout)
 	defer cancel()
 
-	collection := database.Collection(collectionName)
+	collection := db.Collection(collectionName)
 
 	if filter == nil {
 		filter = bson.M{}
@@ -141,25 +141,25 @@ func FindOneDocument[T any](collectionName string, filter interface{}) (*T, erro
 }
 
 // FindDocumentByID finds a document by its string ID
-func FindDocumentByID[T any](collectionName string, idStr string) (*T, error) {
+func FindDocumentByID[T any](db *mongo.Database, collectionName string, idStr string) (*T, error) {
 	id, err := bson.ObjectIDFromHex(idStr)
 	if err != nil {
 		return nil, fmt.Errorf("invalid ID format: %v", err)
 	}
 
-	return FindOneDocument[T](collectionName, bson.M{"_id": id})
+	return FindOneDocument[T](db, collectionName, bson.M{"_id": id})
 }
 
 // FindManyDocuments retrieves multiple documents matching the options
-func FindManyDocuments[T any](collectionName string, opts ...*FindOptions) ([]T, error) {
-	if database == nil {
+func FindManyDocuments[T any](db *mongo.Database, collectionName string, opts ...*FindOptions) ([]T, error) {
+	if db == nil {
 		return nil, fmt.Errorf("database not initialized, call Initialize first")
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), DefaultTimeout)
 	defer cancel()
 
-	collection := database.Collection(collectionName)
+	collection := db.Collection(collectionName)
 
 	// Set default options if none provided
 	var opt *FindOptions
@@ -204,20 +204,20 @@ func FindManyDocuments[T any](collectionName string, opts ...*FindOptions) ([]T,
 }
 
 // UpdateDocumentByID updates a document by its string ID
-func UpdateDocumentByID(collectionName string, idStr string, update interface{}) error {
+func UpdateDocumentByID(db *mongo.Database, collectionName string, idStr string, update interface{}) error {
 	id, err := bson.ObjectIDFromHex(idStr)
 	if err != nil {
 		return fmt.Errorf("invalid ID format: %v", err)
 	}
 
-	if database == nil {
+	if db == nil {
 		return fmt.Errorf("database not initialized, call Initialize first")
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), DefaultTimeout)
 	defer cancel()
 
-	collection := database.Collection(collectionName)
+	collection := db.Collection(collectionName)
 	result, err := collection.UpdateOne(ctx, bson.M{"_id": id}, update)
 	if err != nil {
 		return fmt.Errorf("update failed: %v", err)
@@ -231,15 +231,15 @@ func UpdateDocumentByID(collectionName string, idStr string, update interface{})
 }
 
 // UpdateOneDocument updates a single document matching the filter
-func UpdateOneDocument(collectionName string, filter interface{}, update interface{}) error {
-	if database == nil {
+func UpdateOneDocument(db *mongo.Database, collectionName string, filter interface{}, update interface{}) error {
+	if db == nil {
 		return fmt.Errorf("database not initialized, call Initialize first")
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), DefaultTimeout)
 	defer cancel()
 
-	collection := database.Collection(collectionName)
+	collection := db.Collection(collectionName)
 
 	if filter == nil {
 		return fmt.Errorf("filter cannot be nil")
@@ -258,15 +258,15 @@ func UpdateOneDocument(collectionName string, filter interface{}, update interfa
 }
 
 // UpdateManyDocuments updates multiple documents matching the filter
-func UpdateManyDocuments(collectionName string, filter interface{}, update interface{}) (int64, error) {
-	if database == nil {
+func UpdateManyDocuments(db *mongo.Database, collectionName string, filter interface{}, update interface{}) (int64, error) {
+	if db == nil {
 		return 0, fmt.Errorf("database not initialized, call Initialize first")
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), DefaultTimeout)
 	defer cancel()
 
-	collection := database.Collection(collectionName)
+	collection := db.Collection(collectionName)
 
 	if filter == nil {
 		return 0, fmt.Errorf("filter cannot be nil")
@@ -281,20 +281,20 @@ func UpdateManyDocuments(collectionName string, filter interface{}, update inter
 }
 
 // ReplaceDocumentByID replaces a document by its string ID
-func ReplaceDocumentByID[T any](collectionName string, idStr string, replacement T) error {
+func ReplaceDocumentByID[T any](db *mongo.Database, collectionName string, idStr string, replacement T) error {
 	id, err := bson.ObjectIDFromHex(idStr)
 	if err != nil {
 		return fmt.Errorf("invalid ID format: %v", err)
 	}
 
-	if database == nil {
+	if db == nil {
 		return fmt.Errorf("database not initialized, call Initialize first")
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), DefaultTimeout)
 	defer cancel()
 
-	collection := database.Collection(collectionName)
+	collection := db.Collection(collectionName)
 	result, err := collection.ReplaceOne(ctx, bson.M{"_id": id}, replacement)
 	if err != nil {
 		return fmt.Errorf("replace failed: %v", err)
@@ -308,20 +308,20 @@ func ReplaceDocumentByID[T any](collectionName string, idStr string, replacement
 }
 
 // DeleteDocumentByID deletes a document by its string ID
-func DeleteDocumentByID(collectionName string, idStr string) error {
+func DeleteDocumentByID(db *mongo.Database, collectionName string, idStr string) error {
 	id, err := bson.ObjectIDFromHex(idStr)
 	if err != nil {
 		return fmt.Errorf("invalid ID format: %v", err)
 	}
 
-	if database == nil {
+	if db == nil {
 		return fmt.Errorf("database not initialized, call Initialize first")
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), DefaultTimeout)
 	defer cancel()
 
-	collection := database.Collection(collectionName)
+	collection := db.Collection(collectionName)
 	result, err := collection.DeleteOne(ctx, bson.M{"_id": id})
 	if err != nil {
 		return fmt.Errorf("delete failed: %v", err)
@@ -335,15 +335,15 @@ func DeleteDocumentByID(collectionName string, idStr string) error {
 }
 
 // DeleteOneDocument deletes a single document matching the filter
-func DeleteOneDocument(collectionName string, filter interface{}) error {
-	if database == nil {
+func DeleteOneDocument(db *mongo.Database, collectionName string, filter interface{}) error {
+	if db == nil {
 		return fmt.Errorf("database not initialized, call Initialize first")
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), DefaultTimeout)
 	defer cancel()
 
-	collection := database.Collection(collectionName)
+	collection := db.Collection(collectionName)
 
 	if filter == nil {
 		return fmt.Errorf("filter cannot be nil")
@@ -362,15 +362,15 @@ func DeleteOneDocument(collectionName string, filter interface{}) error {
 }
 
 // DeleteManyDocuments deletes multiple documents matching the filter
-func DeleteManyDocuments(collectionName string, filter interface{}) (int64, error) {
-	if database == nil {
+func DeleteManyDocuments(db *mongo.Database, collectionName string, filter interface{}) (int64, error) {
+	if db == nil {
 		return 0, fmt.Errorf("database not initialized, call Initialize first")
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), DefaultTimeout)
 	defer cancel()
 
-	collection := database.Collection(collectionName)
+	collection := db.Collection(collectionName)
 
 	if filter == nil {
 		return 0, fmt.Errorf("filter cannot be nil")
@@ -385,15 +385,15 @@ func DeleteManyDocuments(collectionName string, filter interface{}) (int64, erro
 }
 
 // CountDocuments counts documents matching the filter
-func CountDocuments(collectionName string, filter interface{}) (int64, error) {
-	if database == nil {
+func CountDocuments(db *mongo.Database, collectionName string, filter interface{}) (int64, error) {
+	if db == nil {
 		return 0, fmt.Errorf("database not initialized, call Initialize first")
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), DefaultTimeout)
 	defer cancel()
 
-	collection := database.Collection(collectionName)
+	collection := db.Collection(collectionName)
 
 	if filter == nil {
 		filter = bson.M{}
@@ -408,8 +408,8 @@ func CountDocuments(collectionName string, filter interface{}) (int64, error) {
 }
 
 // DocumentExists checks if a document exists matching the filter
-func DocumentExists(collectionName string, filter interface{}) (bool, error) {
-	count, err := CountDocuments(collectionName, filter)
+func DocumentExists(db *mongo.Database, collectionName string, filter interface{}) (bool, error) {
+	count, err := CountDocuments(db, collectionName, filter)
 	if err != nil {
 		return false, err
 	}
@@ -417,25 +417,25 @@ func DocumentExists(collectionName string, filter interface{}) (bool, error) {
 }
 
 // DocumentExistsByID checks if a document exists by its string ID
-func DocumentExistsByID(collectionName string, idStr string) (bool, error) {
+func DocumentExistsByID(db *mongo.Database, collectionName string, idStr string) (bool, error) {
 	id, err := bson.ObjectIDFromHex(idStr)
 	if err != nil {
 		return false, fmt.Errorf("invalid ID format: %v", err)
 	}
 
-	return DocumentExists(collectionName, bson.M{"_id": id})
+	return DocumentExists(db, collectionName, bson.M{"_id": id})
 }
 
 // UpsertDocument performs an upsert operation (update or insert)
-func UpsertDocument[T any](collectionName string, filter interface{}, replacement T) (*bson.ObjectID, error) {
-	if database == nil {
+func UpsertDocument[T any](db *mongo.Database, collectionName string, filter interface{}, replacement T) (*bson.ObjectID, error) {
+	if db == nil {
 		return nil, fmt.Errorf("database not initialized, call Initialize first")
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), DefaultTimeout)
 	defer cancel()
 
-	collection := database.Collection(collectionName)
+	collection := db.Collection(collectionName)
 
 	if filter == nil {
 		return nil, fmt.Errorf("filter cannot be nil")
@@ -456,14 +456,14 @@ func UpsertDocument[T any](collectionName string, filter interface{}, replacemen
 }
 
 // DropCollection drops (deletes) an entire collection
-func DropCollection(collectionName string) error {
-	if database == nil {
+func DropCollection(db *mongo.Database, collectionName string) error {
+	if db == nil {
 		return fmt.Errorf("database not initialized, call Initialize first")
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), DefaultTimeout)
 	defer cancel()
 
-	collection := database.Collection(collectionName)
+	collection := db.Collection(collectionName)
 	return collection.Drop(ctx)
 }
