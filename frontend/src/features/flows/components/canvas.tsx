@@ -14,13 +14,13 @@ import {
 } from "@xyflow/react";
 
 import "@xyflow/react/dist/style.css";
-import { useMutation, useQuery } from "@tanstack/react-query";
-import type { Flow, ICreateFlow } from "@/types/flows";
 import Toolbar from "./toolbar";
 import { toast } from "sonner";
 import NodeMenu from "./node-menu";
-import { useSidebar } from "../ui/sidebar";
 import useCanvas from "@/hooks/use-canvas";
+import { useSaveFlow } from "../api/save-flow";
+import type { Flow } from "../types/flows";
+import { useSidebar } from "@/components/ui/sidebar";
 
 const initialNodes: Node[] = [
   {
@@ -43,44 +43,31 @@ const initialEdges: Edge[] = [
   },
 ];
 
-// If id is provided, it will load the flow with that id
-// If not, it will create a new empty flow
-export default function Canvas({ id }: { id?: string }) {
+// If flow is provided, it will render it
+// If not, the user can create a new flow
+export default function Canvas({ loadedFlow }: { loadedFlow: Flow | null }) {
   const { setOpen } = useSidebar();
   const { selectedNodeId, updateSelectedNodeId, resetSelectedNodeId } =
     useCanvas();
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>(initialEdges);
 
-  // If id is provided, fetch the flow data from the server
-  const flow = useQuery<{ flow: Flow } | null>({
-    queryKey: ["flow", id],
-    queryFn: async () => {
-      if (!id) return null; // If no id, return null
-      const response = await fetch(`/api/flows/${id}`);
-      if (!response.ok) {
-        throw new Error("Failed to fetch flow");
-      }
-      return response.json();
-    },
-    enabled: !!id, // Only run this query if id is provided
-  });
-
   // If flow data is loaded, set the nodes and edges
   // This effect runs when the flow data is fetched successfully
   useEffect(() => {
-    if (flow.data) {
-      const { nodes: flowNodes, edges: flowEdges } = flow.data.flow;
-      if (flowNodes && flowEdges) {
-        setNodes(flowNodes);
-        setEdges(flowEdges);
+    if (loadedFlow) {
+      const { nodes, edges } = loadedFlow;
+      if (nodes && edges) {
+        setNodes(nodes);
+        setEdges(edges);
       }
     }
-  }, [flow.data, setNodes, setEdges]);
+  }, [loadedFlow, setNodes, setEdges]);
 
   // Close sidebar when flow editor is opened
   useEffect(() => {
     setOpen(false);
+    // Leaving this empty dependency array to run only once on mount
   }, []);
 
   const onConnect = useCallback(
@@ -102,29 +89,7 @@ export default function Canvas({ id }: { id?: string }) {
     resetSelectedNodeId();
   }, [resetSelectedNodeId]);
 
-  const saveFlow = useMutation({
-    mutationFn: async (graphData: ICreateFlow) => {
-      const response = await fetch("/api/flows", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(graphData),
-      });
-      if (!response.ok) {
-        throw new Error("Failed to save graph");
-      }
-      return response.json();
-    },
-  });
-
-  if (flow.isLoading) {
-    return <div>Loading flow...</div>;
-  }
-
-  if (flow.isError) {
-    return <div>Error loading flow: {flow.error.message}</div>;
-  }
+  const saveFlow = useSaveFlow();
 
   return (
     <div style={{ width: "100%", height: "100%" }}>
