@@ -2,6 +2,7 @@ package main
 
 import (
 	"flowgraph/auth"
+	"flowgraph/config"
 	"flowgraph/db"
 	"flowgraph/flows"
 
@@ -9,6 +10,9 @@ import (
 )
 
 func main() {
+	// Initialize app configuration
+	config.InitConfig()
+
 	// Initialize MongoDB database client (Panics if connection fails)
 	database := db.InitMongoDbClient()
 
@@ -31,13 +35,17 @@ func ListenAndServe(flowController *flows.FlowRestController, authController *au
 	// Create a new Gin router
 	router := gin.Default()
 
+	// TODO - Mount an authentication middleware
+
 	// Mount HTTP server endpoints
 	// Flows endpoints
 	router.GET("/flows", flowController.GetAllFlows)
 	router.GET("/flows/:id", flowController.GetFlowByID)
 	router.POST("/flows", flowController.CreateFlow)
+
 	// Auth endpoints
 	router.POST("/login", authController.Login)
+	router.POST("/register", authController.Register)
 
 	// Start the server on port 8080
 	router.Run(":8080")

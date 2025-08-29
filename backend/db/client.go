@@ -2,9 +2,9 @@ package db
 
 import (
 	"context"
+	"flowgraph/config"
 	"fmt"
 	"log"
-	"os"
 
 	"go.mongodb.org/mongo-driver/v2/mongo"
 	"go.mongodb.org/mongo-driver/v2/mongo/options"
@@ -12,14 +12,8 @@ import (
 
 // init makes sure the MongoDB client is initialized when the package is imported.
 func InitMongoDbClient() *mongo.Database {
-	// Get the MongoDB URI from the environment variable
-	var uri string
-	if uri = os.Getenv("MONGODB_URI"); uri == "" {
-		log.Fatal("You must set your 'MONGODB_URI' environment variable. See\n\t https://docs.mongodb.com/drivers/go/current/usage-examples/")
-	}
-
 	// Create a new client and connect to the server
-	opts := options.Client().ApplyURI(uri)
+	opts := options.Client().ApplyURI(config.Config.MongodbUri)
 	client, err := mongo.Connect(opts)
 	if err != nil {
 		panic(err)

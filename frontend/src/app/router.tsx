@@ -3,14 +3,16 @@ import Flows from "./routes/flows/flows-list";
 import Flow from "./routes/flows/loaded-flow";
 import Index from "./routes";
 import NewFlow from "./routes/flows/new-flow";
-import Login from "./routes/auth/login";
+import { LoginPage } from "./routes/auth/login";
+import { RegisterPage } from "./routes/auth/register";
 import { AppLayout } from "./layout";
 
 // TODO - Handle layout more elegantly
 export function AppRouter() {
   return (
     <Switch>
-      <Route path="/auth/login" component={Login} />
+      <Route path="/login" component={LoginPage} />
+      <Route path="/register" component={RegisterPage} />
       <Route path="/" component={Index} />
       <AppLayout>
         <Route path="/flows" component={Flows} />

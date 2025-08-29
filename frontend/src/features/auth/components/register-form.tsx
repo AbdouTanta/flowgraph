@@ -10,7 +10,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useForm } from "react-hook-form";
-import { useLogin } from "../api/login";
+import { useRegister } from "../api/register";
 import { toast } from "sonner";
 import { useLocation } from "wouter";
 import { useAuthStore } from "@/lib/auth-store";
@@ -19,10 +19,11 @@ import { SLUGS } from "@/lib/route-slugs";
 
 interface Inputs {
   email: string;
+  username: string;
   password: string;
 }
 
-export function LoginForm({
+export function RegisterForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
@@ -31,7 +32,7 @@ export function LoginForm({
   const [, navigate] = useLocation();
 
   const setUser = useAuthStore((state) => state.setUser);
-  const login = useLogin({
+  const register = useRegister({
     mutationConfig: {
       onSuccess: (res: { token: string; user: User }) => {
         setUser(res.user);
@@ -39,15 +40,16 @@ export function LoginForm({
         navigate("/flows");
       },
       onError: (error: any) => {
-        console.error("Login error:", error);
-        toast.error("Login failed. Please check your credentials.");
+        console.error("Register error:", error);
+        toast.error("Register failed. Please check your input.");
       },
     },
   });
 
   const onSubmit = (data: any) => {
-    login.mutate({
+    register.mutate({
       email: data.email,
+      username: data.username,
       password: data.password,
     });
   };
@@ -75,14 +77,17 @@ export function LoginForm({
                 />
               </div>
               <div className="grid gap-3">
+                <Label htmlFor="username">Username</Label>
+                <Input
+                  id="username"
+                  type="text"
+                  required
+                  {...methods.register("username")}
+                />
+              </div>
+              <div className="grid gap-3">
                 <div className="flex items-center">
                   <Label htmlFor="password">Password</Label>
-                  <a
-                    href="#"
-                    className="ml-auto inline-block text-sm underline-offset-4 hover:underline"
-                  >
-                    Forgot your password?
-                  </a>
                 </div>
                 <Input
                   id="password"
@@ -93,17 +98,14 @@ export function LoginForm({
               </div>
               <div className="flex flex-row gap-3">
                 <Button type="submit" className="w-full">
-                  Login
+                  Register
                 </Button>
-                {/* <Button variant="outline" className="w-full">
-                  Login with Google
-                </Button> */}
               </div>
             </div>
             <div className="mt-4 text-center text-sm">
-              Don&apos;t have an account?{" "}
-              <a href={SLUGS.REGISTER} className="underline underline-offset-4">
-                Sign up
+              Already have an account? {""}
+              <a href={SLUGS.LOGIN} className="underline underline-offset-4">
+                Login
               </a>
             </div>
           </form>

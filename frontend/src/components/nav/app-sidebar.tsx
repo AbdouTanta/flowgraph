@@ -17,7 +17,10 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
+import { useAuthStore } from "@/lib/auth-store";
+import { SLUGS } from "@/lib/route-slugs";
+import { setCookie } from "@/lib/jwt";
 
 const data = {
   user: {
@@ -42,6 +45,11 @@ const data = {
 };
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const user = useAuthStore((state) => state.user);
+  const [, navigate] = useLocation();
+
+  if (!user) return null;
+
   return (
     <Sidebar collapsible="offcanvas" {...props}>
       <SidebarHeader>
@@ -64,7 +72,15 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <NavBottom items={data.navBottom} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={data.user} />
+        <NavUser
+          user={user!}
+          // TODO - Put elsewhere and manage login and logout properly
+          onLogout={() => {
+            useAuthStore.getState().setUser(null);
+            setCookie("token", "");
+            navigate(SLUGS.LOGIN);
+          }}
+        />
       </SidebarFooter>
     </Sidebar>
   );

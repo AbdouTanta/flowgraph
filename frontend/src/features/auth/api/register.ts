@@ -1,13 +1,14 @@
 import type { MutationConfig } from "@/config/react-query";
 import { useMutation } from "@tanstack/react-query";
 
-interface ILoginPayload {
+interface IRegisterPayload {
   email: string;
+  username: string;
   password: string;
 }
 
-async function loginUser(payload: ILoginPayload) {
-  return fetch("/api/login", {
+async function registerUser(payload: IRegisterPayload) {
+  return fetch("/api/register", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -21,17 +22,17 @@ async function loginUser(payload: ILoginPayload) {
   });
 }
 
-type UseLoginOptions = {
-  mutationConfig?: MutationConfig<typeof loginUser>;
+type UseRegisterOptions = {
+  mutationConfig?: MutationConfig<typeof registerUser>;
 };
 
-const useLogin = ({ mutationConfig }: UseLoginOptions = {}) => {
+const useRegister = ({ mutationConfig }: UseRegisterOptions = {}) => {
   const { ...restConfig } = mutationConfig || {};
 
   return useMutation({
     ...restConfig,
-    mutationFn: loginUser,
+    mutationFn: registerUser,
   });
 };
 
-export { useLogin };
+export { useRegister };
