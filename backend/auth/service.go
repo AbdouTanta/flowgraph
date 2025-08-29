@@ -46,7 +46,6 @@ func (s *AuthService) Register(userPayload User) (*User, string, error) {
 	if err != nil {
 		return nil, "", fmt.Errorf("failed to check existing user: %v", err)
 	}
-	fmt.Printf("Existing user: %+v\n", existingUser)
 	if existingUser != nil {
 		return nil, "", fmt.Errorf("user with email %s already exists", userPayload.Email)
 	}
