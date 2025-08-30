@@ -8,4 +8,7 @@ export type Flow = {
   edges: Edge[];
 };
 
-export type ICreateFlow = Omit<Flow, "id">;
+export type ICreateFlow = {
+  name: string;
+  description?: string;
+};

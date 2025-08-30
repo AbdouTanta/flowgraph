@@ -14,8 +14,8 @@ export default function Flows() {
     return <ErrorPage message={message} />;
   }
 
-  if (!flows.data || flows.data.flows.length === 0) {
-    return <div>No flows available.</div>;
+  if (!flows.data || flows.data?.flows?.length === 0) {
+    return <div className="p-4">No flows available.</div>;
   }
 
   return (

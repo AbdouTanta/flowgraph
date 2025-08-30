@@ -15,42 +15,19 @@ import {
 
 import "@xyflow/react/dist/style.css";
 import Toolbar from "./toolbar";
-import { toast } from "sonner";
 import NodeMenu from "./node-menu";
 import useCanvas from "@/hooks/use-canvas";
-import { useSaveFlow } from "../api/save-flow";
 import type { Flow } from "../types/flows";
 import { useSidebar } from "@/components/ui/sidebar";
 
-const initialNodes: Node[] = [
-  {
-    id: "1",
-    type: "input",
-    position: { x: 0, y: 0 },
-    data: { label: "Input Node" },
-  },
-  {
-    id: "2",
-    position: { x: 100, y: 100 },
-    data: { label: "Default Node" },
-  },
-];
-const initialEdges: Edge[] = [
-  {
-    id: "e1-2",
-    source: "1",
-    target: "2",
-  },
-];
-
 // If flow is provided, it will render it
 // If not, the user can create a new flow
-export default function Canvas({ loadedFlow }: { loadedFlow: Flow | null }) {
+export default function Canvas({ loadedFlow }: { loadedFlow: Flow }) {
   const { setOpen } = useSidebar();
   const { selectedNodeId, updateSelectedNodeId, resetSelectedNodeId } =
     useCanvas();
-  const [nodes, setNodes, onNodesChange] = useNodesState<Node>(initialNodes);
-  const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>(initialEdges);
+  const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
+  const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
 
   // If flow data is loaded, set the nodes and edges
   // This effect runs when the flow data is fetched successfully
@@ -89,8 +66,6 @@ export default function Canvas({ loadedFlow }: { loadedFlow: Flow | null }) {
     resetSelectedNodeId();
   }, [resetSelectedNodeId]);
 
-  const saveFlow = useSaveFlow();
-
   return (
     <div style={{ width: "100%", height: "100%" }}>
       <ReactFlow
@@ -104,27 +79,6 @@ export default function Canvas({ loadedFlow }: { loadedFlow: Flow | null }) {
         fitView={true}
       >
         <Toolbar
-          onSaveGraph={() => {
-            const graphData = { nodes, edges };
-            // Here you can implement saving logic, e.g., sending to a server
-            saveFlow.mutate(
-              {
-                // TODO - replace with actual graph data
-                name: "lol",
-                description: "even more lolz",
-                ...graphData,
-              },
-              {
-                onSuccess: () => {
-                  toast("Graph saved successfully!");
-                },
-                onError: (error) => {
-                  console.error("Error saving graph:", error);
-                  toast("Failed to save graph");
-                },
-              },
-            );
-          }}
           onAddNode={() => {
             const newNode: Node = {
               id: `${nodes.length + 1}`,
