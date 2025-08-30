@@ -4,6 +4,7 @@ import (
 	"flowgraph/config"
 	"flowgraph/utils"
 	"fmt"
+	"log"
 
 	"github.com/golang-jwt/jwt/v5"
 )
@@ -12,9 +13,9 @@ type AuthService struct {
 	authRepository AuthRepository
 }
 
-func NewAuthService(authRepository AuthRepository) *AuthService {
+func NewAuthService(authRepository *AuthRepository) *AuthService {
 	return &AuthService{
-		authRepository: authRepository,
+		authRepository: *authRepository,
 	}
 }
 
@@ -83,4 +84,39 @@ func (s *AuthService) Register(userPayload User) (*User, string, error) {
 	}
 
 	return user, tokenString, nil
+}
+
+func (s *AuthService) GetUserFromToken(tokenString string) (*User, error) {
+	// Parse the token
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		// Validate the signing method
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+		}
+		return []byte(config.Config.SigningKey), nil
+	})
+	if err != nil || !token.Valid {
+		return nil, fmt.Errorf("invalid token: %v", err)
+	}
+
+	log.Printf("Parsed token: %+v", token)
+
+	// Extract user ID from token claims
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if !ok || claims["id"] == nil {
+		return nil, fmt.Errorf("invalid token claims")
+	}
+
+	userId := claims["id"].(string)
+
+	// Fetch the user from the database using the user ID
+	user, err := s.authRepository.FindUserById(userId)
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch user by ID: %v", err)
+	}
+	if user == nil {
+		return nil, fmt.Errorf("user not found")
+	}
+
+	return user, nil
 }

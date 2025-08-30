@@ -32,20 +32,20 @@ func main() {
 }
 
 func ListenAndServe(flowController *flows.FlowRestController, authController *auth.AuthRestController) {
-	// Create a new Gin router
 	router := gin.Default()
-
-	// TODO - Mount an authentication middleware
-
-	// Mount HTTP server endpoints
-	// Flows endpoints
-	router.GET("/flows", flowController.GetAllFlows)
-	router.GET("/flows/:id", flowController.GetFlowByID)
-	router.POST("/flows", flowController.CreateFlow)
 
 	// Auth endpoints
 	router.POST("/login", authController.Login)
 	router.POST("/register", authController.Register)
+
+	// Auth middleware for protected routes
+	router.Use(auth.AuthMiddleware(authController))
+
+	// Flows endpoints
+	router.GET("/flows", flowController.GetAllFlows)
+	router.GET("/flows/:id", flowController.GetFlowByID)
+	router.POST("/flows", flowController.CreateFlow)
+	// router.PUT("/flows", flowController.UpdateFlow)
 
 	// Start the server on port 8080
 	router.Run(":8080")

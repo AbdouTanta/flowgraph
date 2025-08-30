@@ -11,10 +11,3 @@ type User struct {
 	Username string        `bson:"username" json:"username"`
 	Password string        `bson:"password" json:"password"`
 }
-
-type AuthRepository interface {
-	Login(username string, password string) (*User, error)
-	Register(email string, username string, hashedPassword string) (*User, error)
-	FindUserByEmail(email string) (*User, error)
-	FindUserByUsername(username string) (*User, error)
-}

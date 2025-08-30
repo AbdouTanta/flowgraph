@@ -20,7 +20,6 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
         username: decodedToken.username,
         email: decodedToken.email,
       });
-      console.log("done");
       return;
     }
 

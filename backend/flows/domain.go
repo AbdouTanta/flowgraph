@@ -11,6 +11,7 @@ type Flow struct {
 	Name        string        `bson:"name" json:"name"`
 	Nodes       []Node        `bson:"nodes" json:"nodes"`
 	Edges       []Edge        `bson:"edges" json:"edges"`
+	UserId      string        `bson:"user_id" json:"user_id"`
 }
 
 type NodeData struct {
@@ -31,10 +32,4 @@ type Edge struct {
 	ID     string `bson:"_id,omitempty" json:"id"`
 	Source string `bson:"source" json:"source"` // ID of the source node
 	Target string `bson:"target" json:"target"` // ID of the target node
-}
-
-type FlowRepository interface {
-	FindAllFlows() ([]Flow, error)
-	FindFlowById(id string) (*Flow, error)
-	InsertFlow(flow *Flow) error
 }

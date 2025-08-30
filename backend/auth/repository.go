@@ -9,17 +9,17 @@ import (
 	"go.mongodb.org/mongo-driver/v2/mongo"
 )
 
-type DbAuthRepository struct {
+type AuthRepository struct {
 	Db *mongo.Database
 }
 
-func NewAuthRepository(db *mongo.Database) *DbAuthRepository {
-	return &DbAuthRepository{
+func NewAuthRepository(db *mongo.Database) *AuthRepository {
+	return &AuthRepository{
 		Db: db,
 	}
 }
 
-func (r *DbAuthRepository) Login(email string, password string) (*User, error) {
+func (r *AuthRepository) Login(email string, password string) (*User, error) {
 	// Check for the user in database
 	user, err := db.FindOneDocument[User](r.Db, "users", bson.M{"email": email})
 	if err != nil {
@@ -35,7 +35,7 @@ func (r *DbAuthRepository) Login(email string, password string) (*User, error) {
 	return user, nil
 }
 
-func (r *DbAuthRepository) Register(email, username, hashedPassword string) (*User, error) {
+func (r *AuthRepository) Register(email, username, hashedPassword string) (*User, error) {
 	user := &User{
 		Email:    email,
 		Username: username,
@@ -51,12 +51,17 @@ func (r *DbAuthRepository) Register(email, username, hashedPassword string) (*Us
 	return user, nil
 }
 
-func (r *DbAuthRepository) FindUserByEmail(email string) (*User, error) {
+func (r *AuthRepository) FindUserById(id string) (*User, error) {
+	user, err := db.FindDocumentByID[User](r.Db, "users", id)
+	return user, err
+}
+
+func (r *AuthRepository) FindUserByEmail(email string) (*User, error) {
 	user, err := db.FindOneDocument[User](r.Db, "users", bson.M{"email": email})
 	return user, err
 }
 
-func (r *DbAuthRepository) FindUserByUsername(username string) (*User, error) {
+func (r *AuthRepository) FindUserByUsername(username string) (*User, error) {
 	user, err := db.FindOneDocument[User](r.Db, "users", bson.M{"username": username})
 	return user, err
 }
