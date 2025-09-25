@@ -5,6 +5,7 @@ import (
 	"flowgraph/config"
 	"flowgraph/db"
 	"flowgraph/flows"
+	"flowgraph/utils"
 
 	"github.com/gin-gonic/gin"
 )
@@ -15,17 +16,18 @@ func main() {
 
 	// Initialize MongoDB database client (Panics if connection fails)
 	database := db.InitMongoDbClient()
+	httpResponder := utils.NewHTTPResponder()
 
 	// DDD hamburger architecture: https://medium.com/@remast/the-ddd-hamburger-for-go-61dba99c4aaf
 	// Flows repository, service, and controller
 	flowRepository := flows.NewFlowsRepository(database)
 	flowService := flows.NewFlowService(flowRepository)
-	flowController := flows.NewFlowRestController(flowService)
+	flowController := flows.NewFlowRestController(flowService, httpResponder)
 
 	// Auth repository, service, and controller
 	authRepository := auth.NewAuthRepository(database)
 	authService := auth.NewAuthService(authRepository)
-	authController := auth.NewAuthRestController(authService)
+	authController := auth.NewAuthRestController(authService, httpResponder)
 
 	// Start HTTP server
 	ListenAndServe(flowController, authController)

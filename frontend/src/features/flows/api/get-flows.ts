@@ -3,12 +3,16 @@ import type { Flow } from "../types/flows";
 import { apiClient } from "@/lib/api-client";
 
 export function useFlows() {
-  return useQuery<{ flows: Flow[] }>({
+  return useQuery<{ data: { flows: Flow[] } }>({
     queryKey: ["flows"],
     queryFn: async () => {
       const response = await apiClient.get("/api/flows");
       if (!response.ok) {
-        throw new Error("Network response was not ok");
+        const errorResponse = await response.json();
+        if (errorResponse && errorResponse.message) {
+          throw new Error(errorResponse.message);
+        }
+        throw new Error(`Error fetching flows: ${response.statusText}`);
       }
       return response.json();
     },

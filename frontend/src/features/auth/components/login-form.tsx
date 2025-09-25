@@ -26,16 +26,21 @@ export function LoginForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
-  const methods = useForm<Inputs>({});
+  const methods = useForm<Inputs>({
+    defaultValues: {
+      email: "test@test.com",
+      password: "test",
+    },
+  });
   const { handleSubmit } = methods;
   const [, navigate] = useLocation();
 
   const setUser = useAuthStore((state) => state.setUser);
   const login = useLogin({
     mutationConfig: {
-      onSuccess: (res: { token: string; user: User }) => {
-        setUser(res.user);
-        cookieStore.set("token", res.token);
+      onSuccess: async (res: { data: { token: string; user: User } }) => {
+        setUser(res.data.user);
+        await cookieStore.set("token", res.data.token);
         navigate("/flows");
       },
       onError: (error: any) => {

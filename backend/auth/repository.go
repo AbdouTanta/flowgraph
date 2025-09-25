@@ -25,6 +25,9 @@ func (r *AuthRepository) Login(email string, password string) (*User, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to find user: %v", err)
 	}
+	if user == nil {
+		return nil, fmt.Errorf("invalid email or password")
+	}
 
 	// Compare the hashed password with the provided password
 	err = utils.ComparePasswords(user.Password, password)
